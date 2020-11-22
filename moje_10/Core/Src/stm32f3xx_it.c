@@ -42,6 +42,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
+extern PWM_man_value;
+extern is_auto;
 
 /* USER CODE END PV */
 
@@ -56,7 +58,8 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim15;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -184,7 +187,7 @@ void SysTick_Handler(void)
   /* USER CODE BEGIN SysTick_IRQn 0 */
 
   /* USER CODE END SysTick_IRQn 0 */
-
+  HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
   /* USER CODE END SysTick_IRQn 1 */
@@ -241,6 +244,23 @@ void DMA1_Channel7_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles TIM1 break and TIM15 interrupts.
+  */
+void TIM1_BRK_TIM15_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM1_BRK_TIM15_IRQn 0 */
+
+		uint8_t tempp = PWM_man_value;
+		setDutyCycle(tempp);
+
+  /* USER CODE END TIM1_BRK_TIM15_IRQn 0 */
+	HAL_TIM_IRQHandler(&htim15);
+  /* USER CODE BEGIN TIM1_BRK_TIM15_IRQn 1 */
+
+  /* USER CODE END TIM1_BRK_TIM15_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM2 global interrupt.
   */
 void TIM2_IRQHandler(void)
@@ -256,6 +276,7 @@ void TIM2_IRQHandler(void)
 				}
 
   /* USER CODE END TIM2_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim2);
   /* USER CODE BEGIN TIM2_IRQn 1 */
 
   /* USER CODE END TIM2_IRQn 1 */

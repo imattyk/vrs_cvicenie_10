@@ -23,8 +23,6 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include <string.h>
-#include <stdio.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -57,6 +55,7 @@ void SystemClock_Config(void);
 void proccesDmaData(uint8_t* sign, uint8_t len, uint8_t used_bytes);
 void checkCommand(uint8_t total_len);
 
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -86,6 +85,7 @@ uint8_t count = 0;
 	uint8_t pwm[10] = "";
 	uint8_t value_of_pwm_$[10] = "";
 	uint8_t value_of_pwm[10] = "";
+	uint8_t D_value = 0;
 /* USER CODE END 0 */
 
 /**
@@ -101,13 +101,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-
-  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
-  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
-
-  NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
-
-  /* System interrupt init*/
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -125,24 +119,26 @@ int main(void)
   MX_DMA_Init();
   MX_TIM2_Init();
   MX_USART2_UART_Init();
+  MX_TIM15_Init();
   /* USER CODE BEGIN 2 */
   USART2_RegisterCallback(proccesDmaData);
   /* USER CODE END 2 */
-
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+  HAL_TIM_Base_Start_IT(&htim15);
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
 
-	  		//a poslem
-	  		//USART2_PutBuffer(tx_data, sizeof(tx_data));
-
-	  		//200ms, trosku z toho chytam epilepsiu
-	  		//LL_mDelay(200);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
+}
+
+void setDutyCycle(uint8_t D){
+	D_value = D;
+    TIM2->CCR1 = D_value;
 }
 
 /**
@@ -173,8 +169,13 @@ void SystemClock_Config(void)
   {
 
   }
-  LL_Init1msTick(8000000);
   LL_SetSystemCoreClock(8000000);
+
+   /* Update the time base */
+  if (HAL_InitTick (TICK_INT_PRIORITY) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /* USER CODE BEGIN 4 */
