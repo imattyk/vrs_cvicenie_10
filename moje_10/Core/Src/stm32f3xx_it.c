@@ -42,14 +42,16 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-extern PWM_man_value;
-extern is_auto;
+extern int PWM_man_value;
+extern int is_auto;
+int je_zapnuta = 0;
+uint8_t hodnota = 0;
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-
+void prejdi_na_hodnotu(uint8_t final);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -249,15 +251,47 @@ void DMA1_Channel7_IRQHandler(void)
 void TIM1_BRK_TIM15_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_BRK_TIM15_IRQn 0 */
-
+	if(is_auto == 0){
 		uint8_t tempp = PWM_man_value;
-		setDutyCycle(tempp);
+		prejdi_na_hodnotu(tempp);
+	}
+	if(is_auto == 1){
+		if(!je_zapnuta){
+			hodnota++;
+			setDutyCycle(hodnota);
+			if(hodnota >= 100){
+				je_zapnuta = 1;
+			}
+		}
+		if(je_zapnuta){
+			hodnota--;
+			setDutyCycle(hodnota);
+			if(hodnota <= 0){
+				je_zapnuta = 0;
+			}
+		}
+
+	}
+
 
   /* USER CODE END TIM1_BRK_TIM15_IRQn 0 */
 	HAL_TIM_IRQHandler(&htim15);
   /* USER CODE BEGIN TIM1_BRK_TIM15_IRQn 1 */
 
   /* USER CODE END TIM1_BRK_TIM15_IRQn 1 */
+}
+
+void prejdi_na_hodnotu(uint8_t final){
+	if(final != hodnota){
+		if(final < hodnota){
+			hodnota--;
+			setDutyCycle(hodnota);
+		}
+		if(final > hodnota){
+			hodnota++;
+			setDutyCycle(hodnota);
+		}
+	}
 }
 
 /**

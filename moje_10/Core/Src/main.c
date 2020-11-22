@@ -80,7 +80,7 @@ uint8_t count = 0;
 	uint8_t rx_data[35];
 
 	// cvicenie 10 premenne
-	uint8_t is_auto = 0;
+	int is_auto = 0;
 	int PWM_man_value = 0;
 	uint8_t pwm[10] = "";
 	uint8_t value_of_pwm_$[10] = "";
