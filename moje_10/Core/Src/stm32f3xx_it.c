@@ -300,14 +300,7 @@ void prejdi_na_hodnotu(uint8_t final){
 void TIM2_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM2_IRQn 0 */
-	if(LL_GPIO_IsOutputPinSet(GPIOB, LL_GPIO_PIN_3))
-				{
-					LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_3);
-				}
-				else
-				{
-					LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_3);
-				}
+
 
   /* USER CODE END TIM2_IRQn 0 */
   HAL_TIM_IRQHandler(&htim2);
