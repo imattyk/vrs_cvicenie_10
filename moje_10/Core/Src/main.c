@@ -52,9 +52,9 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+
 void proccesDmaData(uint8_t* sign, uint8_t len, uint8_t used_bytes);
 void checkCommand(uint8_t total_len);
-
 
 /* USER CODE END PFP */
 
@@ -101,7 +101,13 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+
+  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
+
+  NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+
+  /* System interrupt init*/
 
   /* USER CODE BEGIN Init */
 
@@ -119,26 +125,22 @@ int main(void)
   MX_DMA_Init();
   MX_TIM2_Init();
   MX_USART2_UART_Init();
-  MX_TIM15_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   USART2_RegisterCallback(proccesDmaData);
+  LL_TIM_CC_EnableChannel(TIM2, LL_TIM_CHANNEL_CH1);
+  LL_TIM_EnableIT_UPDATE(TIM2);
+  LL_TIM_EnableCounter(TIM2);
+  LL_TIM_EnableIT_UPDATE(TIM3);
+  LL_TIM_EnableCounter(TIM3);
   /* USER CODE END 2 */
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-  HAL_TIM_Base_Start_IT(&htim15);
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
   /* USER CODE END 3 */
-}
-
-void setDutyCycle(uint8_t D){
-	D_value = D;
-    TIM2->CCR1 = D_value;
 }
 
 /**
@@ -169,13 +171,8 @@ void SystemClock_Config(void)
   {
 
   }
+  LL_Init1msTick(8000000);
   LL_SetSystemCoreClock(8000000);
-
-   /* Update the time base */
-  if (HAL_InitTick (TICK_INT_PRIORITY) != HAL_OK)
-  {
-    Error_Handler();
-  }
 }
 
 /* USER CODE BEGIN 4 */
@@ -270,28 +267,32 @@ void proccesDmaData(uint8_t* sign, uint8_t len, uint8_t used_bytes)
 //v tejto funkcii uz len checkujem co mi prislo, aky command
 //tato funkica sa zavola hore len ak som dostal # a ukoncilo sa to $ cize tu mam dlzku prijateho stringu medzi # a $ a samotne rx_data s commandom
 void checkCommand(uint8_t total_len){
-	for(uint8_t i=0;i<total_len;i++){
-		//togglujem is_auto pomocou prikazov
-		if(strcmp(rx_data, "#auto$") == 0){
-			is_auto = 1;
-		}
-		if(strcmp(rx_data, "#manual$") == 0){
-			is_auto = 0;
-		}
-		if(is_auto == 0) {
-			//pozriem ci mam #PWM na zaciatku rx_data a zoberiem cislo spoza tohoto prikazu do PWM_man_value
-			strncpy(pwm, rx_data, 4);
-			strcat(pwm, '\0');
-			if(strcmp(pwm, "#PWM") == 0){
-				strcpy(value_of_pwm_$, &rx_data[4]);
-				strncpy(value_of_pwm, value_of_pwm_$, 2);
-				PWM_man_value = atoi(value_of_pwm);
-			}
-			memset(pwm,0,10);
-			memset(value_of_pwm,0,10);
-			memset(value_of_pwm_$,0,10);
-		}
+
+	//togglujem is_auto pomocou prikazov
+	if(strcmp(rx_data, "#auto$") == 0){
+		is_auto = 1;
 	}
+	if(strcmp(rx_data, "#manual$") == 0){
+		is_auto = 0;
+	}
+	if(is_auto == 0) {
+		//pozriem ci mam #PWM na zaciatku rx_data a zoberiem cislo spoza tohoto prikazu do PWM_man_value
+		strncpy(pwm, rx_data, 4);
+		strcat(pwm, '\0');
+		if(strcmp(pwm, "#PWM") == 0){
+			strcpy(value_of_pwm_$, &rx_data[4]);
+			strncpy(value_of_pwm, value_of_pwm_$, 2);
+			PWM_man_value = atoi(value_of_pwm);
+		}
+		memset(pwm,0,10);
+		memset(value_of_pwm,0,10);
+		memset(value_of_pwm_$,0,10);
+	}
+}
+
+void setDutyCycle(uint8_t D){
+	D_value = D;
+    TIM2->CCR1 = D_value;
 }
 
 /* USER CODE END 4 */

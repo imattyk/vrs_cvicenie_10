@@ -60,8 +60,7 @@ void prejdi_na_hodnotu(uint8_t final);
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern TIM_HandleTypeDef htim2;
-extern TIM_HandleTypeDef htim15;
+
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -189,7 +188,7 @@ void SysTick_Handler(void)
   /* USER CODE BEGIN SysTick_IRQn 0 */
 
   /* USER CODE END SysTick_IRQn 0 */
-  HAL_IncTick();
+
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
   /* USER CODE END SysTick_IRQn 1 */
@@ -246,67 +245,39 @@ void DMA1_Channel7_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles TIM1 break and TIM15 interrupts.
+  * @brief This function handles TIM3 global interrupt.
   */
-void TIM1_BRK_TIM15_IRQHandler(void)
+void TIM3_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM1_BRK_TIM15_IRQn 0 */
+  /* USER CODE BEGIN TIM3_IRQn 0 */
+	if (LL_TIM_IsActiveFlag_UPDATE(TIM3)){
 	if(is_auto == 0){
-		uint8_t tempp = PWM_man_value;
-		prejdi_na_hodnotu(tempp);
-	}
-	if(is_auto == 1){
-		if(!je_zapnuta){
-			hodnota++;
-			setDutyCycle(hodnota);
-			if(hodnota >= 100){
-				je_zapnuta = 1;
+			uint8_t tempp = PWM_man_value;
+			prejdi_na_hodnotu(tempp);
+		}
+		if(is_auto == 1){
+			if(!je_zapnuta){
+				hodnota++;
+				setDutyCycle(hodnota);
+				if(hodnota >= 100){
+					je_zapnuta = 1;
+				}
 			}
-		}
-		if(je_zapnuta){
-			hodnota--;
-			setDutyCycle(hodnota);
-			if(hodnota <= 0){
-				je_zapnuta = 0;
+			if(je_zapnuta){
+				hodnota--;
+				setDutyCycle(hodnota);
+				if(hodnota <= 0){
+					je_zapnuta = 0;
+				}
 			}
-		}
 
-	}
-
-
-  /* USER CODE END TIM1_BRK_TIM15_IRQn 0 */
-	HAL_TIM_IRQHandler(&htim15);
-  /* USER CODE BEGIN TIM1_BRK_TIM15_IRQn 1 */
-
-  /* USER CODE END TIM1_BRK_TIM15_IRQn 1 */
-}
-
-void prejdi_na_hodnotu(uint8_t final){
-	if(final != hodnota){
-		if(final < hodnota){
-			hodnota--;
-			setDutyCycle(hodnota);
-		}
-		if(final > hodnota){
-			hodnota++;
-			setDutyCycle(hodnota);
 		}
 	}
-}
+	LL_TIM_ClearFlag_UPDATE(TIM3);
+  /* USER CODE END TIM3_IRQn 0 */
+  /* USER CODE BEGIN TIM3_IRQn 1 */
 
-/**
-  * @brief This function handles TIM2 global interrupt.
-  */
-void TIM2_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM2_IRQn 0 */
-
-
-  /* USER CODE END TIM2_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim2);
-  /* USER CODE BEGIN TIM2_IRQn 1 */
-
-  /* USER CODE END TIM2_IRQn 1 */
+  /* USER CODE END TIM3_IRQn 1 */
 }
 
 /**
@@ -327,6 +298,18 @@ void USART2_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+void prejdi_na_hodnotu(uint8_t final){
+	if(final != hodnota){
+		if(final < hodnota){
+			hodnota--;
+			setDutyCycle(hodnota);
+		}
+		if(final > hodnota){
+			hodnota++;
+			setDutyCycle(hodnota);
+		}
+	}
+}
 
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
